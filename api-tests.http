@@ -1,33 +1,59 @@
-### Get all products
+### Get all products (with API key)
+GET http://localhost:3000/api/products
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Get all products (without API key - should fail)
 GET http://localhost:3000/api/products
 Accept: application/json
 
 ### Get a specific product
 GET http://localhost:3000/api/products/1
+X-API-Key: dev-key-12345
 Accept: application/json
 
-### Create a new product
+### Create a new product (with validation)
 POST http://localhost:3000/api/products
+X-API-Key: dev-key-12345
 Content-Type: application/json
 
 {
-  "name": "Gaming Mouse",
-  "description": "High-precision gaming mouse with RGB lighting",
-  "price": 75.99,
+  "name": "Gaming Mouse Pro",
+  "description": "High-precision gaming mouse with RGB lighting and customizable buttons",
+  "price": 89.99,
   "category": "electronics",
   "inStock": true
 }
 
-### Update a product
-PUT http://localhost:3000/api/products/1
+### Create a product with validation errors
+POST http://localhost:3000/api/products
+X-API-Key: dev-key-12345
 Content-Type: application/json
 
 {
-  "name": "Updated Laptop",
-  "price": 1300.00,
-  "inStock": false
+  "name": "",
+  "description": "Invalid product",
+  "price": -10,
+  "category": "invalid-category",
+  "inStock": "not-boolean"
 }
 
-### Delete a product
+### Update a product
+PUT http://localhost:3000/api/products/1
+X-API-Key: dev-key-12345
+Content-Type: application/json
+
+{
+  "name": "Super Gaming Laptop",
+  "price": 1499.99
+}
+
+### Delete a product (admin permission required)
 DELETE http://localhost:3000/api/products/2
+X-API-Key: admin-key-abcdef
+Accept: application/json
+
+### Test 404 route
+GET http://localhost:3000/api/nonexistent
+X-API-Key: dev-key-12345
 Accept: application/json
