@@ -1,0 +1,33 @@
+### Get all products
+GET http://localhost:3000/api/products
+Accept: application/json
+
+### Get a specific product
+GET http://localhost:3000/api/products/1
+Accept: application/json
+
+### Create a new product
+POST http://localhost:3000/api/products
+Content-Type: application/json
+
+{
+  "name": "Gaming Mouse",
+  "description": "High-precision gaming mouse with RGB lighting",
+  "price": 75.99,
+  "category": "electronics",
+  "inStock": true
+}
+
+### Update a product
+PUT http://localhost:3000/api/products/1
+Content-Type: application/json
+
+{
+  "name": "Updated Laptop",
+  "price": 1300.00,
+  "inStock": false
+}
+
+### Delete a product
+DELETE http://localhost:3000/api/products/2
+Accept: application/json
