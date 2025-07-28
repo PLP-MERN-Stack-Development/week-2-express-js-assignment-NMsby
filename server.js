@@ -16,8 +16,12 @@ const {
 const {
   globalErrorHandler,
   notFoundHandler,
-  asyncHandler
+  asyncHandler, healthCheckMiddleware
 } = require('./middleware/errorHandler');
+
+// Import error handling utilities
+const { ErrorFactory } = require('./errors');
+const { requestIdMiddleware } = require('./middleware/errorHandler');
 
 // Initialize Express app
 const app = express();
@@ -28,7 +32,23 @@ app.use(bodyParser.json());
 
 // Apply custom middleware
 app.use(logger); // Log all requests
+app.use(requestIdMiddleware); // Add request IDs for tracking
 app.use(authenticateApiKey); // Authenticate API requests
+
+// Add health check middleware
+app.use(healthCheckMiddleware);
+
+// Error statistics endpoint (development only)
+if (process.env.NODE_ENV !== 'production') {
+    app.get('/api/error-stats', authenticateApiKey, (req, res) => {
+        const stats = require('./utils/errorMetrics').errorMetrics.getStats();
+        res.json({
+            success: true,
+            data: stats,
+            message: 'Error statistics retrieved successfully'
+        });
+    });
+}
 
 // Trust proxy for correct IP addresses
 app.set('trust proxy', true);
@@ -82,11 +102,7 @@ app.get('/api/products/:id', validateProductId, asyncHandler(async (req, res) =>
   const product = products.find(p => p.id === productId);
 
   if (!product) {
-    return res.status(404).json({
-      success: false,
-      message: `Product with ID ${productId} not found`,
-      error: 'PRODUCT_NOT_FOUND'
-    });
+    throw ErrorFactory.notFound('Product', productId);
   }
 
   res.status(200).json({
@@ -110,7 +126,9 @@ app.post('/api/products',
         description: description.trim(),
         price: parseFloat(price),
         category: category.trim().toLowerCase(),
-        inStock: inStock
+        inStock: inStock,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
       products.push(newProduct);
@@ -134,11 +152,7 @@ app.put('/api/products/:id',
       const productIndex = products.findIndex(p => p.id === productId);
 
       if (productIndex === -1) {
-        return res.status(404).json({
-          success: false,
-          message: `Product with ID ${productId} not found`,
-          error: 'PRODUCT_NOT_FOUND'
-        });
+        throw ErrorFactory.notFound('Product', productId);
       }
 
       // Update the product (only update provided fields)
@@ -168,11 +182,7 @@ app.delete('/api/products/:id',
       const productIndex = products.findIndex(p => p.id === productId);
 
       if (productIndex === -1) {
-        return res.status(404).json({
-          success: false,
-          message: `Product with ID ${productId} not found`,
-          error: 'PRODUCT_NOT_FOUND'
-        });
+        throw ErrorFactory.notFound('Product', productId);
       }
 
       // Remove the product

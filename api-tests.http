@@ -1,59 +1,54 @@
-### Get all products (with API key)
-GET http://localhost:3000/api/products
-X-API-Key: dev-key-12345
-Accept: application/json
-
-### Get all products (without API key - should fail)
+### Test missing API key (should return custom authentication error)
 GET http://localhost:3000/api/products
 Accept: application/json
 
-### Get a specific product
-GET http://localhost:3000/api/products/1
+### Test invalid API key (should return custom authentication error)
+GET http://localhost:3000/api/products
+X-API-Key: invalid-key
+Accept: application/json
+
+### Test non-existent product (should return custom not found error)
+GET http://localhost:3000/api/products/non-existent-id
 X-API-Key: dev-key-12345
 Accept: application/json
 
-### Create a new product (with validation)
-POST http://localhost:3000/api/products
-X-API-Key: dev-key-12345
-Content-Type: application/json
-
-{
-  "name": "Gaming Mouse Pro",
-  "description": "High-precision gaming mouse with RGB lighting and customizable buttons",
-  "price": 89.99,
-  "category": "electronics",
-  "inStock": true
-}
-
-### Create a product with validation errors
+### Test validation error (should return custom validation error)
 POST http://localhost:3000/api/products
 X-API-Key: dev-key-12345
 Content-Type: application/json
 
 {
   "name": "",
-  "description": "Invalid product",
+  "description": "",
   "price": -10,
   "category": "invalid-category",
   "inStock": "not-boolean"
 }
 
-### Update a product
-PUT http://localhost:3000/api/products/1
+### Test authorization error (user trying to delete - should fail)
+DELETE http://localhost:3000/api/products/1
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test 404 route (should return custom route not found error)
+GET http://localhost:3000/api/nonexistent-route
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test malformed JSON (should return custom validation error)
+POST http://localhost:3000/api/products
 X-API-Key: dev-key-12345
 Content-Type: application/json
 
 {
-  "name": "Super Gaming Laptop",
-  "price": 1499.99
+  "name": "Test Product",
+  "description": "Test Description",
+  "price": 29.99,
+  "category": "electronics",
+  "inStock": true,
 }
 
-### Delete a product (admin permission required)
-DELETE http://localhost:3000/api/products/2
-X-API-Key: admin-key-abcdef
-Accept: application/json
-
-### Test 404 route
-GET http://localhost:3000/api/nonexistent
+### Test successful operations for comparison
+GET http://localhost:3000/api/products/1
 X-API-Key: dev-key-12345
 Accept: application/json

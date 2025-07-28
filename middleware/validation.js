@@ -1,5 +1,7 @@
 // middleware/validation.js - Request validation middleware
 
+const { ErrorFactory } = require('../errors');
+
 // Validate product creation data
 const validateProductCreation = (req, res, next) => {
     const { name, description, price, category, inStock } = req.body;
@@ -51,12 +53,7 @@ const validateProductCreation = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'Validation failed',
-            error: 'VALIDATION_ERROR',
-            details: errors
-        });
+        return next(ErrorFactory.validation('Product validation failed', errors));
     }
 
     // Sanitize and normalize data
@@ -115,12 +112,7 @@ const validateProductUpdate = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'Validation failed',
-            error: 'VALIDATION_ERROR',
-            details: errors
-        });
+        return next(ErrorFactory.validation('Product update validation failed', errors));
     }
 
     // Sanitize and normalize provided data
@@ -140,21 +132,21 @@ const validateProductId = (req, res, next) => {
     const { id } = req.params;
 
     if (!id || typeof id !== 'string' || id.trim().length === 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'Product ID is required and must be a valid string',
-            error: 'INVALID_PRODUCT_ID'
-        });
+        return next(ErrorFactory.validation(
+            'Product ID is required and must be a valid string',
+            ['Product ID parameter is missing or invalid'],
+            'id'
+        ));
     }
 
     // Additional UUID format validation (optional, since we're using UUIDs)
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (id !== '1' && id !== '2' && id !== '3' && !uuidRegex.test(id)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Product ID must be a valid UUID format or legacy ID',
-            error: 'INVALID_PRODUCT_ID_FORMAT'
-        });
+        return next(ErrorFactory.validation(
+            'Product ID must be a valid UUID format or legacy ID',
+            ['ID must be a valid UUID or legacy ID (1, 2, 3)'],
+            'id'
+        ));
     }
 
     next();

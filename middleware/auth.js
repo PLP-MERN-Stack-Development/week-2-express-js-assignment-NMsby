@@ -1,5 +1,7 @@
 // middleware/auth.js - API authentication middleware
 
+const { ErrorFactory } = require('../errors');
+
 // Simple API key authentication middleware
 const authenticateApiKey = (req, res, next) => {
     // Skip authentication for root route and docs
@@ -19,22 +21,18 @@ const authenticateApiKey = (req, res, next) => {
 
     // Check if API key is provided
     if (!apiKey) {
-        return res.status(401).json({
-            success: false,
-            message: 'API key is required. Please provide X-API-Key header.',
-            error: 'MISSING_API_KEY',
-            hint: 'Add header: X-API-Key: dev-key-12345'
-        });
+        return next(ErrorFactory.authentication(
+            'API key is required. Please provide X-API-Key header.',
+            'MISSING_API_KEY'
+        ));
     }
 
     // Validate API key
     if (!validApiKeys.includes(apiKey)) {
-        return res.status(401).json({
-            success: false,
-            message: 'Invalid API key provided.',
-            error: 'INVALID_API_KEY',
-            hint: 'Use one of: dev-key-12345, test-key-67890, admin-key-abcdef'
-        });
+        return next(ErrorFactory.authentication(
+            'Invalid API key provided.',
+            'INVALID_API_KEY'
+        ));
     }
 
     // Set user context based on API key
@@ -48,38 +46,33 @@ const authenticateApiKey = (req, res, next) => {
     next();
 };
 
-// Role-based authorization middleware
-const requireRole = (role) => {
+// Permission-based authorization middleware
+const requirePermission = (permission) => {
     return (req, res, next) => {
-        if (!req.user) {
-            return res.status(401).json({
-                success: false,
-                message: 'Authentication required',
-                error: 'NOT_AUTHENTICATED'
-            });
-        }
-
-        if (req.user.role !== role && req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: `Access denied. Required role: ${role}`,
-                error: 'INSUFFICIENT_PERMISSIONS'
-            });
+        if (!req.user || !req.user.permissions.includes(permission)) {
+            return next(ErrorFactory.authorization(
+                `Access denied. Required permission: ${permission}`,
+                permission
+            ));
         }
 
         next();
     };
 };
 
-// Permission-based authorization middleware
-const requirePermission = (permission) => {
+// Role-based authorization middleware
+const requireRole = (role) => {
     return (req, res, next) => {
-        if (!req.user || !req.user.permissions.includes(permission)) {
-            return res.status(403).json({
-                success: false,
-                message: `Access denied. Required permission: ${permission}`,
-                error: 'INSUFFICIENT_PERMISSIONS'
-            });
+        if (!req.user) {
+            return next(ErrorFactory.authentication('Authentication required', 'NOT_AUTHENTICATED'));
+        }
+
+        if (req.user.role !== role && req.user.role !== 'admin') {
+            return next(ErrorFactory.authorization(
+                `Access denied. Required role: ${role}`,
+                null,
+                role
+            ));
         }
 
         next();
