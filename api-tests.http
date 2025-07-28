@@ -1,54 +1,184 @@
-### Test missing API key (should return custom authentication error)
+### ========================================
+### BASIC CRUD OPERATIONS
+### ========================================
+
+### Get all products (basic)
 GET http://localhost:3000/api/products
-Accept: application/json
-
-### Test invalid API key (should return custom authentication error)
-GET http://localhost:3000/api/products
-X-API-Key: invalid-key
-Accept: application/json
-
-### Test non-existent product (should return custom not found error)
-GET http://localhost:3000/api/products/non-existent-id
 X-API-Key: dev-key-12345
 Accept: application/json
 
-### Test validation error (should return custom validation error)
-POST http://localhost:3000/api/products
-X-API-Key: dev-key-12345
-Content-Type: application/json
-
-{
-  "name": "",
-  "description": "",
-  "price": -10,
-  "category": "invalid-category",
-  "inStock": "not-boolean"
-}
-
-### Test authorization error (user trying to delete - should fail)
-DELETE http://localhost:3000/api/products/1
-X-API-Key: dev-key-12345
-Accept: application/json
-
-### Test 404 route (should return custom route not found error)
-GET http://localhost:3000/api/nonexistent-route
-X-API-Key: dev-key-12345
-Accept: application/json
-
-### Test malformed JSON (should return custom validation error)
-POST http://localhost:3000/api/products
-X-API-Key: dev-key-12345
-Content-Type: application/json
-
-{
-  "name": "Test Product",
-  "description": "Test Description",
-  "price": 29.99,
-  "category": "electronics",
-  "inStock": true,
-}
-
-### Test successful operations for comparison
+### Get single product with enhanced response
 GET http://localhost:3000/api/products/1
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### ========================================
+### ADVANCED FEATURES TESTING
+### ========================================
+
+### Test pagination
+GET http://localhost:3000/api/products?page=1&limit=2
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test category filtering
+GET http://localhost:3000/api/products?category=electronics
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test multiple category filtering
+GET http://localhost:3000/api/products?category=electronics,kitchen
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test price range filtering
+GET http://localhost:3000/api/products?minPrice=50&maxPrice=1000
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test stock status filtering
+GET http://localhost:3000/api/products?inStock=true
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test sorting by price (ascending)
+GET http://localhost:3000/api/products?sortBy=price&sortOrder=asc
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test sorting by name (descending)
+GET http://localhost:3000/api/products?sortBy=name&sortOrder=desc
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test combined filtering, sorting, and pagination
+GET http://localhost:3000/api/products?category=electronics&inStock=true&sortBy=price&sortOrder=desc&page=1&limit=5
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### ========================================
+### SEARCH FUNCTIONALITY
+### ========================================
+
+### Basic search
+GET http://localhost:3000/api/products/search?q=laptop
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Search with pagination
+GET http://localhost:3000/api/products/search?q=coffee&page=1&limit=10
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Search with filters
+GET http://localhost:3000/api/products/search?search=high&category=electronics&inStock=true
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Search in specific fields
+GET http://localhost:3000/api/products/search?q=performance&fields=name,description
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### ========================================
+### STATISTICS AND ANALYTICS
+### ========================================
+
+### Get comprehensive product statistics
+GET http://localhost:3000/api/products/stats
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Get statistics summary
+GET http://localhost:3000/api/products/stats?format=summary
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Get detailed statistics
+GET http://localhost:3000/api/products/stats?detailed=true
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Get statistics for specific category
+GET http://localhost:3000/api/products/stats?category=electronics
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Get all categories with counts
+GET http://localhost:3000/api/products/categories
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### ========================================
+### ERROR TESTING FOR ADVANCED FEATURES
+### ========================================
+
+### Test invalid pagination
+GET http://localhost:3000/api/products?page=0&limit=150
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test invalid category filter
+GET http://localhost:3000/api/products?category=invalid-category
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test invalid price range
+GET http://localhost:3000/api/products?minPrice=1000&maxPrice=50
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test invalid sort field
+GET http://localhost:3000/api/products?sortBy=invalid-field
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test search without query term
+GET http://localhost:3000/api/products/search
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test search with too short term
+GET http://localhost:3000/api/products/search?q=a
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### ========================================
+### INTEGRATION TESTS
+### ========================================
+
+### Create product and test search
+POST http://localhost:3000/api/products
+X-API-Key: dev-key-12345
+Content-Type: application/json
+
+{
+  "name": "Advanced Gaming Setup",
+  "description": "Complete gaming setup with RGB lighting and wireless connectivity",
+  "price": 299.99,
+  "category": "electronics",
+  "inStock": true
+}
+
+### Search for the newly created product
+GET http://localhost:3000/api/products/search?q=gaming&category=electronics
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### Test comprehensive filtering with all parameters
+GET http://localhost:3000/api/products?q=high&category=electronics&minPrice=100&maxPrice=2000&inStock=true&sortBy=price&sortOrder=asc&page=1&limit=5
+X-API-Key: dev-key-12345
+Accept: application/json
+
+### ========================================
+### HEALTH AND MONITORING
+### ========================================
+
+### Check API health
+GET http://localhost:3000/health
+Accept: application/json
+
+### Get error statistics (development only)
+GET http://localhost:3000/api/error-stats
 X-API-Key: dev-key-12345
 Accept: application/json
